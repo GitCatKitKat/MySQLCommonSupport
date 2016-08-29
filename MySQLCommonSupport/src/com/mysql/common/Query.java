@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ public class Query {
 	private static Object OBJECT;
 
 	public Query(Object object, String SQLHeader, String[] WHEREColunm)
-			throws IllegalArgumentException, InvocationTargetException {
+			throws IllegalArgumentException, InvocationTargetException, ParseException {
 		CLASS_FACTORY = new ClassFactory();
 		new ObjectGetter(object, CLASS_FACTORY);
 		TABLE_NAME = CLASS_FACTORY.getClassName();
@@ -192,13 +193,13 @@ public class Query {
 	}
 
 	public static void main(String args[]) throws IllegalArgumentException, InvocationTargetException,
-			ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+			ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException, ParseException {
 		Person person = new Person();
-		// person.setGender("nv");
+		person.setGender("nv");
 		person.setId("UUID5");
 		person.setName("老蒙子56");
 		person.setAge(90);
-		// person.setTime(new Date());
+		person.setTime(new Date());
 		person.setMoney(20.0d);
 		String[] lala = { "ID" };
 		System.out.println(new Query(person, "update", lala).executeUpdate());

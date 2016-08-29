@@ -3,22 +3,25 @@ package com.mysql.common;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.mysql.entity.Person;
-
 public class ObjectGetter {
 	public ObjectGetter(Object object, ClassFactory classFactory)
-			throws IllegalArgumentException, InvocationTargetException {
+			throws IllegalArgumentException, InvocationTargetException, ParseException {
 
 		// 存放列名和值得集合
 		List values = new ArrayList();
 		List<String> columns = new ArrayList<String>();
 		Map<String, Object> objectMap = new HashMap<String, Object>();
-
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
 		System.out.println("MySQLCommonSupport Service 正在为您获取对象....");
 		// 1.得到参数对象的字节码
 		Class<? extends Object> clz = object.getClass();
@@ -49,7 +52,10 @@ public class ObjectGetter {
 					value = method.invoke(object, null);
 					if (value instanceof String) {
 						objectMap.put(fieldName, "'" + value + "'");
-					} else {
+					} else if(value instanceof Date){
+						objectMap.put(fieldName, "'" + formatter.format(value) + "'");
+						System.out.println(formatter.format(value));
+					}else{
 						objectMap.put(fieldName, value);
 					}
 				} catch (IllegalAccessException e) {
