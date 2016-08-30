@@ -31,10 +31,8 @@ public class ObjectGetter {
 		Method[] methods = clz.getMethods();
 		// 4.得到类名并输出控制台
 		String clzName = clz.getName();
-		System.out.println("对象类名为:" + clzName);
 		// 5.表名
 		String tableName = clzName.split("\\.")[clzName.split("\\.").length - 1];
-		System.out.println("数据库表名:" + tableName);
 
 		for (Method method : methods) {
 			int i = 0;
