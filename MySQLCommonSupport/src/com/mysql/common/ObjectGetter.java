@@ -9,6 +9,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ObjectGetter {
+	
+	/**
+	 * 对象反射操作，向ClassFactory实体插入列名与值
+	 * @param object
+	 * @param classFactory
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws ParseException
+	 */
 	public ObjectGetter(Object object, ClassFactory classFactory)
 			throws IllegalArgumentException, InvocationTargetException, ParseException {
 

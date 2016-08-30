@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.mysql.entity.Person;
 
 public class Query {
@@ -23,6 +22,16 @@ public class Query {
 	private static Integer FLAG;// 公用标志
 	private static String SQL_STATEMENT;
 	private static Object OBJECT;
+
+	/**
+	 * 
+	 * @param object
+	 * @param SQLHeader
+	 * @param WHEREColunm
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws ParseException
+	 */
 	public Query(Object object, String SQLHeader, String[] WHEREColunm)
 			throws IllegalArgumentException, InvocationTargetException, ParseException {
 		CLASS_FACTORY = new ClassFactory();
@@ -116,6 +125,12 @@ public class Query {
 		return stringBuffer.toString().toUpperCase();
 	}
 
+	/**
+	 * 
+	 * @param  SQLHeader
+	 * @param  WHEREColunm
+	 * @return SQL Statement(Basic CRUD)
+	 */
 	public static String commonSQLGenerator(String SQLHeader, String[] WHEREColunm) {
 		// StringBuffer 实例用于储存SQL语句
 		StringBuffer stringBuffer = new StringBuffer();
@@ -162,7 +177,10 @@ public class Query {
 		return stringBuffer.toString().toUpperCase();
 	}
 
-	// 执行数据改动操作
+	/**
+	 * 数据库改动操作
+	 * @return
+	 */
 	public Integer executeUpdate() {
 		try {
 			Connection conn = DBConnection.getConnection();
@@ -177,43 +195,52 @@ public class Query {
 		}
 	}
 
-	// 执行数据查询操作
+	/**
+	 * 数据库查询操作
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 */
 	public <T> List<T> executeSelect() throws ClassNotFoundException, SQLException, InstantiationException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		//返回所用的实例
+		// 返回所用的实例
 		List<T> list = new ArrayList<T>();
-		//从数据库中查询的列名集合
+		// 从数据库中查询的列名集合
 		List<String> colunms = new ArrayList<String>();
-		//获取被查询的实体字节码
+		// 获取被查询的实体字节码
 		Class<?> clz = Class.forName(OBJECT.getClass().getName());
 		Connection conn = DBConnection.getConnection();
 		PreparedStatement ps = conn.prepareStatement(SQL_STATEMENT);
 		ResultSet rs = ps.executeQuery();
 		ResultSetMetaData rsmd = rs.getMetaData();
-		//获取列名存入集合
-		for(int i=0;i<rsmd.getColumnCount();i++){
-			colunms.add(rsmd.getColumnName(i+1));
+		// 获取列名存入集合
+		for (int i = 0; i < rsmd.getColumnCount(); i++) {
+			colunms.add(rsmd.getColumnName(i + 1));
 		}
-		//循环结果集
-		while(rs.next()){
+		// 循环结果集
+		while (rs.next()) {
 			@SuppressWarnings("unchecked")
-			//每一条结果集，实例化一组对象
+			// 每一条结果集，实例化一组对象
 			T obj = (T) clz.newInstance();
-			//循环列名集合从而拼合setter方法名
-			for(int i=0;i<colunms.size();i++){
+			// 循环列名集合从而拼合setter方法名
+			for (int i = 0; i < colunms.size(); i++) {
 				String colunm = colunms.get(i);
 				String setMethod = "set" + colunm.substring(0, 1).toUpperCase() + colunm.substring(1);
-				//获取被查询对象的所有方法
+				// 获取被查询对象的所有方法
 				Method[] methods = obj.getClass().getMethods();
-				//循环方法集合
-				for(int j=0;j< methods.length;j++){
-					//获取其中一个方法
+				// 循环方法集合
+				for (int j = 0; j < methods.length; j++) {
+					// 获取其中一个方法
 					Method method = methods[j];
-					//判断这个方法是不是属性的setter方法
-					if(method.getName().equals(setMethod)){
-						//反执行setter方法，把RS结果集中的值封装到实体
+					// 判断这个方法是不是属性的setter方法
+					if (method.getName().equals(setMethod)) {
+						// 反执行setter方法，把RS结果集中的值封装到实体
 						method.invoke(obj, rs.getObject(colunm));
-						//跳出循环
+						// 跳出循环
 						break;
 					}
 				}
@@ -229,16 +256,15 @@ public class Query {
 	public static void main(String args[]) throws IllegalArgumentException, InvocationTargetException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException, ParseException {
 		Person person = new Person();
-		//person.setGender("nv");
-		//person.setId("UUID5");
-		//person.setName("老蒙子56");
-		//person.setAge(90);
-		//person.setTime(new Date());
-		//person.setMoney(20.0d);
-		List<Person> list = new Query(person, "select",null).executeSelect();
+		// person.setGender("nv");
+		// person.setId("UUID5");
+		// person.setName("老蒙子56");
+		// person.setAge(90);
+		// person.setTime(new Date());
+		// person.setMoney(20.0d);
+		List<Person> list = new Query(person, "select", null).executeSelect();
 		System.out.println(list.size());
 		System.out.println(list);
-		
-		
+
 	}
 }
