@@ -5,14 +5,11 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.io.Serializable;
 
 import com.mysql.entity.Person;
 
@@ -24,10 +21,8 @@ public class Query {
 	private static String VALUES_SERIALIZATION_STRING; // 字段值序列
 	private static String COLUNMS_SERIALIZATION_STRING;// 字段名序列
 	private static Integer FLAG;// 公用标志
-	private static String SQL_HEADER;
 	private static String SQL_STATEMENT;
 	private static Object OBJECT;
-
 	public Query(Object object, String SQLHeader, String[] WHEREColunm)
 			throws IllegalArgumentException, InvocationTargetException, ParseException {
 		CLASS_FACTORY = new ClassFactory();
@@ -39,14 +34,12 @@ public class Query {
 				CLASS_FACTORY.getKeyValue().values().toString().length() - 1);
 		VALUES_ARRAY = CLASS_FACTORY.getKeyValue().values().toArray();
 		COLUNMS_ARRAY = CLASS_FACTORY.getKeyValue().keySet().toArray();
-		this.SQL_HEADER = SQLHeader;
 		if (WHEREColunm != null) {
-			this.SQL_STATEMENT = this.commonSQLGenerator(SQLHeader, WHEREColunm);
+			Query.SQL_STATEMENT = Query.commonSQLGenerator(SQLHeader, WHEREColunm);
 		} else {
-			this.SQL_STATEMENT = this.commonSQLGenerator(SQLHeader);
+			Query.SQL_STATEMENT = Query.commonSQLGenerator(SQLHeader);
 		}
-		this.OBJECT = object;
-
+		Query.OBJECT = object;
 	}
 
 	/**
@@ -187,21 +180,65 @@ public class Query {
 	// 执行数据查询操作
 	public <T> List<T> executeSelect() throws ClassNotFoundException, SQLException, InstantiationException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		//返回所用的实例
 		List<T> list = new ArrayList<T>();
-		
+		//从数据库中查询的列名集合
+		List<String> colunms = new ArrayList<String>();
+		//获取被查询的实体字节码
+		Class<?> clz = Class.forName(OBJECT.getClass().getName());
+		Connection conn = DBConnection.getConnection();
+		PreparedStatement ps = conn.prepareStatement(SQL_STATEMENT);
+		ResultSet rs = ps.executeQuery();
+		ResultSetMetaData rsmd = rs.getMetaData();
+		//获取列名存入集合
+		for(int i=0;i<rsmd.getColumnCount();i++){
+			colunms.add(rsmd.getColumnName(i+1));
+		}
+		//循环结果集
+		while(rs.next()){
+			@SuppressWarnings("unchecked")
+			//每一条结果集，实例化一组对象
+			T obj = (T) clz.newInstance();
+			//循环列名集合从而拼合setter方法名
+			for(int i=0;i<colunms.size();i++){
+				String colunm = colunms.get(i);
+				String setMethod = "set" + colunm.substring(0, 1).toUpperCase() + colunm.substring(1);
+				//获取被查询对象的所有方法
+				Method[] methods = obj.getClass().getMethods();
+				//循环方法集合
+				for(int j=0;j< methods.length;j++){
+					//获取其中一个方法
+					Method method = methods[j];
+					//判断这个方法是不是属性的setter方法
+					if(method.getName().equals(setMethod)){
+						//反执行setter方法，把RS结果集中的值封装到实体
+						method.invoke(obj, rs.getObject(colunm));
+						//跳出循环
+						break;
+					}
+				}
+			}
+			list.add(obj);
+		}
+		conn.close();
+		ps.close();
+		rs.close();
 		return list;
 	}
 
 	public static void main(String args[]) throws IllegalArgumentException, InvocationTargetException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException, ParseException {
 		Person person = new Person();
-		person.setGender("nv");
-		person.setId("UUID5");
-		person.setName("老蒙子56");
-		person.setAge(90);
-		person.setTime(new Date());
-		person.setMoney(20.0d);
-		String[] lala = { "ID" };
-		System.out.println(new Query(person, "update", lala).executeUpdate());
+		//person.setGender("nv");
+		//person.setId("UUID5");
+		//person.setName("老蒙子56");
+		//person.setAge(90);
+		//person.setTime(new Date());
+		//person.setMoney(20.0d);
+		List<Person> list = new Query(person, "select",null).executeSelect();
+		System.out.println(list.size());
+		System.out.println(list);
+		
+		
 	}
 }
