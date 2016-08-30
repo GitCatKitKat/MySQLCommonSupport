@@ -35,7 +35,7 @@ public class ObjectGetter {
 		String tableName = clzName.split("\\.")[clzName.split("\\.").length - 1];
 
 		for (Method method : methods) {
-			int i = 0;
+			
 			// 获取每个方法的名称
 			String methodName = method.getName();
 			// 获取所有get方法，但不包括getClass
