@@ -253,18 +253,4 @@ public class Query {
 		return list;
 	}
 
-	public static void main(String args[]) throws IllegalArgumentException, InvocationTargetException,
-			ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException, ParseException {
-		Person person = new Person();
-		// person.setGender("nv");
-		// person.setId("UUID5");
-		// person.setName("老蒙子56");
-		// person.setAge(90);
-		// person.setTime(new Date());
-		// person.setMoney(20.0d);
-		List<Person> list = new Query(person, "select", null).executeSelect();
-		System.out.println(list.size());
-		System.out.println(list);
-
-	}
 }

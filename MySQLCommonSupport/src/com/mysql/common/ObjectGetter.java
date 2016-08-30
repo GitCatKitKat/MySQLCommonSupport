@@ -25,6 +25,7 @@ public class ObjectGetter {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		
 		System.out.println("MySQLCommonSupport Service 正在为您获取对象....");
+		System.out.println("Powered by 冯心睿");
 		// 1.得到参数对象的字节码
 		Class<? extends Object> clz = object.getClass();
 		// 2.获得参数对象中的所有方法
@@ -42,7 +43,6 @@ public class ObjectGetter {
 			if (methodName.startsWith("get") && !methodName.startsWith("getClass")) {
 				// 获取字段名
 				String fieldName = methodName.substring(3, methodName.length());
-				System.out.println("方法名:" + methodName);
 				System.out.println("属性名:" + fieldName);
 				// 判断属性的值是否为字符串，否则不加''
 				Object value = null;
